@@ -5,6 +5,7 @@ import os
 import shutil
 import tty
 import termios
+import subprocess
 from typing import Optional, Callable
 
 
@@ -131,20 +132,25 @@ class InteractivePager:
         # 保存终端设置
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
-        
+
         try:
+            # 启用 alternate screen buffer（备用屏幕缓冲区）
+            # 这样退出时会自动恢复到之前的屏幕状态，就像 vim/less 一样
+            sys.stdout.write('\033[?1049h')
+            sys.stdout.flush()
+
             # 设置为原始模式
             tty.setraw(fd)
-            
+
             # 显示第一页
             self.display_page()
             
             while True:
                 # 读取按键
                 ch = sys.stdin.read(1)
-                
+
                 changed = False
-                
+
                 # 处理按键
                 if ch == 'q' or ch == 'Q':
                     break
@@ -162,16 +168,17 @@ class InteractivePager:
                     changed = self.goto_end()
                 elif ch == '\x03':  # Ctrl+C
                     break
-                
+
                 # 只在内容改变时重新显示
                 if changed:
                     self.display_page()
-        
+
         finally:
+            # 禁用 alternate screen buffer，恢复到之前的屏幕状态
+            sys.stdout.write('\033[?1049l')
+            sys.stdout.flush()
+
             # 恢复终端设置
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-            # 清除状态栏，移动到新行
-            sys.stdout.write('\n')
-            sys.stdout.flush()
-        
+
         return self.current_line
