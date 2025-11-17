@@ -63,28 +63,25 @@ pip install ibook_reader-1.0.0-py3-none-any.whl
 # 默认阅读（自动分页）
 ibook book.epub
 
-# 跳过密码验证
-ibook --no-password book.epub
-
 # 从指定章节开始阅读到末尾（章节从 0 开始）
-ibook --no-password --chapter 5 book.epub
+ibook --chapter 5 book.epub
 
 # 从指定页码开始阅读到末尾
-ibook --no-password --page 100 book.epub
+ibook --page 100 book.epub
 
 # 从 50% 位置开始阅读到末尾
-ibook --no-password --percent 50 book.epub
+ibook --percent 50 book.epub
 
 # 限制输出页数（可选）
-ibook --no-password --chapter 5 --pages 10 book.epub
+ibook --chapter 5 --pages 10 book.epub
 
 # 输出到文件
-ibook --no-password book.epub > book.txt
+ibook book.epub > book.txt
 
 # 与其他命令配合使用
-ibook --no-password book.epub | grep "关键词"
-ibook --no-password book.epub | head -50
-ibook --no-password book.epub | wc -l
+ibook book.epub | grep "关键词"
+ibook book.epub | head -50
+ibook book.epub | wc -l
 ```
 
 ### 首次使用
@@ -111,8 +108,8 @@ $ ibook book.epub
 **跳过密码快速查看**：
 
 ```bash
-$ ibook --no-password book.epub
-# 直接显示内容，无需密码验证
+$ ibook book.epub
+# 输入密码后直接显示内容
 ```
 
 ---
@@ -151,13 +148,13 @@ ibook [选项] [文件路径]
 |-----|------|
 | `-h`, `--help` | 显示帮助信息 |
 | `--version` | 显示版本号 |
-| `--no-password` | 跳过密码验证（用于脚本或管道） |
+| `--set-password` | 设置或修改密码（已有密码需先验证） |
+| `--reset-password` | 重置密码（清除现有密码） |
 | `--page N` | 从指定页码开始输出到末尾 |
 | `--chapter N` | 从指定章节开始输出到末尾（章节从0开始计数） |
 | `--percent N` | 从指定百分比进度开始输出到末尾（0-100） |
 | `--pages N` | 限制输出页数（配合跳转参数使用） |
 | `--clean` | 清理所有数据（配置、进度、书签） |
-| `--reset-password` | 重置密码 |
 
 ### 使用示例
 
@@ -172,30 +169,33 @@ ibook --help
 ibook book.epub
 
 # 从第10章开始读到末尾（章节从0开始）
-ibook --no-password --chapter 10 book.epub
+ibook --chapter 10 book.epub
 
 # 从第100页开始读到末尾
-ibook --no-password --page 100 book.epub
+ibook --page 100 book.epub
 
 # 从50%进度开始读到末尾
-ibook --no-password --percent 50 book.epub
+ibook --percent 50 book.epub
 
 # 只输出10页（从第5章开始）
-ibook --no-password --chapter 5 --pages 10 book.epub
+ibook --chapter 5 --pages 10 book.epub
 
-# 导出到文件（跳过密码验证）
-ibook --no-password book.epub > output.txt
+# 导出到文件
+ibook book.epub > output.txt
 
 # 搜索关键词
-ibook --no-password book.epub | grep "关键词"
+ibook book.epub | grep "关键词"
 
 # 统计字数
-ibook --no-password book.epub | wc -w
+ibook book.epub | wc -w
 
 # 查看前100行
-ibook --no-password book.epub | head -100
+ibook book.epub | head -100
 
-# 重置密码
+# 设置或修改密码
+ibook --set-password
+
+# 重置密码（清除现有密码）
 ibook --reset-password
 
 # 清理所有数据
@@ -232,28 +232,28 @@ ibook --clean
 
 ```bash
 # 从第50%开始读到末尾（例如：从第180页到第360页）
-ibook --no-password --percent 50 book.epub
+ibook --percent 50 book.epub
 
 # 只查看第2章的前5页
-ibook --no-password --chapter 2 --pages 5 book.epub
+ibook --chapter 2 --pages 5 book.epub
 ```
 
 ### 管道输出
 
-使用 `--no-password` 可以无密码验证，方便管道操作：
+所有操作均需要密码验证，包括管道操作：
 
 ```bash
-# 提取包含关键词的内容
-ibook --no-password book.epub | grep "关键词"
+# 提取包含关键词的内容（需要密码验证）
+ibook book.epub | grep "关键词"
 
 # 统计总字数
-ibook --no-password book.epub | wc -w
+ibook book.epub | wc -w
 
 # 保存到文件
-ibook --no-password book.epub > book.txt
+ibook book.epub > book.txt
 
 # 查看前50行
-ibook --no-password book.epub | head -50
+ibook book.epub | head -50
 ```
 
 ---

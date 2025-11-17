@@ -49,9 +49,9 @@ def main():
     )
 
     parser.add_argument(
-        '--no-password',
+        '--set-password',
         action='store_true',
-        help='跳过密码验证（用于脚本或管道）'
+        help='设置或修改密码'
     )
 
     parser.add_argument(
@@ -98,6 +98,26 @@ def main():
         print("✓ 已重置密码，下次启动时需要重新设置")
         return 0
 
+    # 处理设置密码命令
+    if args.set_password:
+        config = Config()
+        auth = AuthService()
+        
+        # 如果已有密码，先验证
+        if config.has_password():
+            print("当前已设置密码，需要先验证身份")
+            if not auth.verify_password():
+                print("✗ 密码验证失败，无法修改密码", file=sys.stderr)
+                return 1
+        
+        # 设置新密码
+        if auth.setup_password():
+            print("✓ 密码设置成功")
+            return 0
+        else:
+            print("✗ 密码设置失败", file=sys.stderr)
+            return 1
+
     # 检查是否提供了文件路径
     if not args.file:
         parser.print_help()
@@ -121,7 +141,7 @@ def main():
 
     # 启动阅读器
     try:
-        return start_reader(file_path, jump_options, args.no_password)
+        return start_reader(file_path, jump_options)
     except KeyboardInterrupt:
         print("\n已中断", file=sys.stderr)
         return 0
@@ -132,25 +152,23 @@ def main():
         return 1
 
 
-def start_reader(file_path: Path, jump_options: dict = None, no_password: bool = False) -> int:
+def start_reader(file_path: Path, jump_options: dict = None) -> int:
     """启动阅读器
 
     Args:
         file_path: 文档文件路径
         jump_options: 跳转选项 {'page': N, 'chapter': N, 'percent': N, 'pages': N}
-        no_password: 是否跳过密码验证
 
     Returns:
         退出码
     """
     jump_options = jump_options or {}
 
-    # 1. 身份验证（除非明确跳过或输出被重定向）
-    if not no_password and sys.stdout.isatty():
-        auth = AuthService()
-        if not auth.verify_password():
-            print("密码验证失败，退出程序", file=sys.stderr)
-            return 1
+    # 1. 身份验证（管道输出时也需要验证）
+    auth = AuthService()
+    if not auth.verify_password():
+        print("密码验证失败，退出程序", file=sys.stderr)
+        return 1
 
     # 2. 加载文档（静默模式，仅在出错时显示信息）
     # print(f"正在加载文档: {file_path.name}...", file=sys.stderr)
